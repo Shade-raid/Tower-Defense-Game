@@ -1,44 +1,46 @@
-from game import Game
 import pygame
 import os
+from game import Game
 
-start_btn = pygame.image.load(os.path.join("game_assets", "button_play.png")).convert_alpha()
-logo = pygame.image.load(os.path.join("game_assets", "logo.png")).convert_alpha()
+# Load assets
+START_BUTTON_IMAGE = pygame.image.load(os.path.join("game_assets", "button_play.png")).convert_alpha()
+LOGO_IMAGE = pygame.image.load(os.path.join("game_assets", "logo.png")).convert_alpha()
+BACKGROUND_IMAGE = pygame.image.load(os.path.join("game_assets", "bg.png"))
 
 class MainMenu:
     def __init__(self, win):
-        self.width = 1350
-        self.height = 700
-        self.bg = pygame.image.load(os.path.join("game_assets", "bg.png"))
-        self.bg = pygame.transform.scale(self.bg, (self.width, self.height))
         self.win = win
-        self.btn = (self.width/2 - start_btn.get_width()/2, 350, start_btn.get_width(), start_btn.get_height())
+        self.width, self.height = win.get_size()
+        self.background = pygame.transform.scale(BACKGROUND_IMAGE, (self.width, self.height))
+        self.start_button_rect = pygame.Rect(
+            self.width // 2 - START_BUTTON_IMAGE.get_width() // 2,
+            350,
+            START_BUTTON_IMAGE.get_width(),
+            START_BUTTON_IMAGE.get_height()
+        )
 
     def run(self):
-        run = True
-
-        while run:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    run = False
-
-                if event.type == pygame.MOUSEBUTTONUP:
-                    # check if hit start btn
-                    x, y = pygame.mouse.get_pos()
-
-                    if self.btn[0] <= x <= self.btn[0] + self.btn[2]:
-                        if self.btn[1] <= y <= self.btn[1] + self.btn[3]:
-                            game = Game(self.win)
-                            game.run()
-                            del game
+        running = True
+        while running:
+            self.handle_events()
             self.draw()
 
         pygame.quit()
 
+    def handle_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+            if event.type == pygame.MOUSEBUTTONUP:
+                if self.start_button_rect.collidepoint(pygame.mouse.get_pos()):
+                    game = Game(self.win)
+                    game.run()
+                    del game  # optional in Python, but safe for resource management
+
     def draw(self):
-        self.win.blit(self.bg, (0,0))
-        self.win.blit(logo, (self.width/2 - logo.get_width()/2, 0))
-        self.win.blit(start_btn, (self.btn[0], self.btn[1]))
+        self.win.blit(self.background, (0, 0))
+        self.win.blit(LOGO_IMAGE, (self.width // 2 - LOGO_IMAGE.get_width() // 2, 0))
+        self.win.blit(START_BUTTON_IMAGE, self.start_button_rect.topleft)
         pygame.display.update()
-
-
